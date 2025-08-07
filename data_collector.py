@@ -143,26 +143,44 @@ def main():
     """
     Main function that runs our data collection and analysis
     """
-    print("Apple Stock Pattern Analyzer - Data Collection Phase")
-    print("="*60)
-    
-    # Step 1: Download the data
-    apple_data = download_apple_data(years_back=5)
-    
-    # Step 2: Explore the data
-    apple_data = explore_basic_data(apple_data)
-    
-    # Step 3: Create visualizations
-    create_basic_visualizations(apple_data)
-    
-    # Step 4: Save data for future use
-    apple_data.to_csv('apple_stock_data.csv')
-    print(f"\nData saved to 'apple_stock_data.csv' for future analysis")
-    
-    return apple_data
+    try:
+        print("Apple Stock Pattern Analyzer - Data Collection Phase")
+        print("="*60)
+        
+        # Step 1: Download the data
+        apple_data = download_apple_data(years_back=5)
+        
+        # Check if data was downloaded successfully
+        if apple_data is None or apple_data.empty:
+            print("Error: No data was downloaded. Please check your internet connection or if the ticker symbol is correct.")
+            return None
+        
+        # Step 2: Explore the data
+        apple_data = explore_basic_data(apple_data)
+        
+        # Step 3: Create visualizations
+        try:
+            create_basic_visualizations(apple_data)
+        except Exception as e:
+            print(f"Warning: Could not create visualizations: {str(e)}")
+        
+        # Step 4: Save data for future use
+        try:
+            apple_data.to_csv('apple_stock_data.csv')
+            print(f"\nData saved to 'apple_stock_data.csv' for future analysis")
+        except Exception as e:
+            print(f"Warning: Could not save data to file: {str(e)}")
+        
+        return apple_data
+
+    except Exception as e:
+        print(f"Error: An unexpected error occurred: {str(e)}")
+        return None
 
 # Run the script if executed directly
 if __name__ == "__main__":
     data = main()
+    if data is None:
+        exit(1)
 
-    
+        
