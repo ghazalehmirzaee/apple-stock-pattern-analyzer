@@ -15,9 +15,6 @@ def download_apple_data(years_back=5):
     
     Parameters:
     years_back (int): How many years of historical data to download
-    
-    Returns:
-    pandas.DataFrame: Stock data with OHLCV columns
     """
     
     # Calculate start date (years_back years ago from today)
@@ -30,7 +27,14 @@ def download_apple_data(years_back=5):
     # AAPL is Apple's stock symbol
     apple_data = yf.download('AAPL', start=start_date, end=end_date)
     
+    # SOLUTION: Fix the MultiIndex column issue
+    # Method 1: Flatten the columns if they are MultiIndex
+    if isinstance(apple_data.columns, pd.MultiIndex):
+        # This removes the ticker symbol and keeps just the data type
+        apple_data.columns = apple_data.columns.get_level_values(0)
+    
     print(f"Successfully downloaded {len(apple_data)} days of data")
+    print(f"Column names: {list(apple_data.columns)}")  # Debug: show actual column names
     
     return apple_data
 
@@ -60,8 +64,10 @@ def explore_basic_data(data):
         'Volume': 'Number of shares traded each day'
     }
     
+    # Only show explanations for columns that actually exist in our data
     for col, explanation in columns_explanation.items():
-        print(f"  {col}: {explanation}")
+        if col in data.columns:
+            print(f"  {col}: {explanation}")
     
     print("\nFirst 5 rows of data:")
     print(data.head())
@@ -90,26 +96,38 @@ def create_basic_visualizations(data):
     fig.suptitle('Apple Stock Analysis - Basic Patterns', fontsize=16)
     
     # Plot 1: Stock price over time
-    axes[0, 0].plot(data.index, data['Adj Close'], color='blue', alpha=0.7)
+    # Use 'Adj Close' if available, otherwise use 'Close'
+    price_column = 'Adj Close' if 'Adj Close' in data.columns else 'Close'
+    axes[0, 0].plot(data.index, data[price_column], color='blue', alpha=0.7)
     axes[0, 0].set_title('Apple Stock Price Over Time')
     axes[0, 0].set_ylabel('Price ($)')
     axes[0, 0].grid(True, alpha=0.3)
     
     # Plot 2: Trading volume over time
-    axes[0, 1].plot(data.index, data['Volume'], color='green', alpha=0.7)
-    axes[0, 1].set_title('Trading Volume Over Time')
-    axes[0, 1].set_ylabel('Volume (shares)')
-    axes[0, 1].grid(True, alpha=0.3)
+    if 'Volume' in data.columns:
+        axes[0, 1].plot(data.index, data['Volume'], color='green', alpha=0.7)
+        axes[0, 1].set_title('Trading Volume Over Time')
+        axes[0, 1].set_ylabel('Volume (shares)')
+        axes[0, 1].grid(True, alpha=0.3)
+    else:
+        axes[0, 1].text(0.5, 0.5, 'Volume data not available', 
+                       horizontalalignment='center', verticalalignment='center',
+                       transform=axes[0, 1].transAxes)
     
     # Plot 3: Daily price range (High - Low)
-    daily_range = data['High'] - data['Low']
-    axes[1, 0].plot(data.index, daily_range, color='red', alpha=0.7)
-    axes[1, 0].set_title('Daily Price Range (Volatility)')
-    axes[1, 0].set_ylabel('Price Range ($)')
-    axes[1, 0].grid(True, alpha=0.3)
+    if 'High' in data.columns and 'Low' in data.columns:
+        daily_range = data['High'] - data['Low']
+        axes[1, 0].plot(data.index, daily_range, color='red', alpha=0.7)
+        axes[1, 0].set_title('Daily Price Range (Volatility)')
+        axes[1, 0].set_ylabel('Price Range ($)')
+        axes[1, 0].grid(True, alpha=0.3)
+    else:
+        axes[1, 0].text(0.5, 0.5, 'High/Low data not available', 
+                       horizontalalignment='center', verticalalignment='center',
+                       transform=axes[1, 0].transAxes)
     
     # Plot 4: Price distribution histogram
-    axes[1, 1].hist(data['Adj Close'], bins=50, color='purple', alpha=0.7)
+    axes[1, 1].hist(data[price_column], bins=50, color='purple', alpha=0.7)
     axes[1, 1].set_title('Price Distribution')
     axes[1, 1].set_xlabel('Price ($)')
     axes[1, 1].set_ylabel('Frequency')
