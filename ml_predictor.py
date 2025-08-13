@@ -1,5 +1,5 @@
 """
-Machine Learning Stock Predictor
+Machine Learning Stock Predictor - FIXED VERSION
 This module creates and evaluates ML models for stock price prediction
 """
 
@@ -31,6 +31,53 @@ class StockMLPredictor:
         self.scaler = StandardScaler()
         self.feature_names = []
         
+        # FIXED: Determine which price column to use
+        self.price_column = self._get_price_column()
+        print(f"Using '{self.price_column}' as the main price column")
+        
+    def _get_price_column(self):
+        """
+        Determine which price column to use based on what's available
+        Prioritizes 'Adj Close' but falls back to 'Close' if needed
+        """
+        if 'Adj Close' in self.data.columns:
+            return 'Adj Close'
+        elif 'Close' in self.data.columns:
+            return 'Close'
+        else:
+            # Try to find any column with 'close' in the name (case insensitive)
+            close_columns = [col for col in self.data.columns if 'close' in col.lower()]
+            if close_columns:
+                return close_columns[0]
+            else:
+                raise ValueError("No suitable price column found! Expected 'Adj Close' or 'Close'")
+    
+    def _check_required_columns(self):
+        """
+        Check if all required columns exist, and provide helpful error messages
+        """
+        required_base_columns = ['Volume']
+        required_indicator_columns = ['MA_20', 'MA_50', 'MA_200', 'Volume_MA', 'Signal']
+        
+        missing_columns = []
+        
+        # Check base columns
+        for col in required_base_columns:
+            if col not in self.data.columns:
+                missing_columns.append(col)
+        
+        # Check indicator columns
+        for col in required_indicator_columns:
+            if col not in self.data.columns:
+                missing_columns.append(col)
+        
+        if missing_columns:
+            print("Missing required columns:", missing_columns)
+            print("Available columns:", list(self.data.columns))
+            print("\nIt looks like you need to run the technical indicators script first!")
+            print("Please run 'python technical_indicators.py' to create the required indicators.")
+            raise ValueError(f"Missing required columns: {missing_columns}")
+        
     def prepare_ml_features(self):
         """
         Create features and target variable for machine learning
@@ -40,19 +87,23 @@ class StockMLPredictor:
         
         print("Preparing machine learning features...")
         
+        # FIXED: Check that all required columns exist before proceeding
+        self._check_required_columns()
+        
+        # FIXED: Use the determined price column instead of hardcoded 'Adj Close'
         # Create target variable: 1 if tomorrow's price is higher, 0 if lower
         self.data['Tomorrow_Higher'] = (
-            self.data['Adj Close'].shift(-1) > self.data['Adj Close']
+            self.data[self.price_column].shift(-1) > self.data[self.price_column]
         ).astype(int)
         
         # Create additional features from our existing data
-        self.data['Price_Change_Pct'] = self.data['Adj Close'].pct_change()
+        self.data['Price_Change_Pct'] = self.data[self.price_column].pct_change()
         self.data['Volume_Change_Pct'] = self.data['Volume'].pct_change()
         
         # Calculate relative position of current price vs moving averages
-        self.data['Price_vs_MA20'] = self.data['Adj Close'] / self.data['MA_20'] - 1
-        self.data['Price_vs_MA50'] = self.data['Adj Close'] / self.data['MA_50'] - 1
-        self.data['Price_vs_MA200'] = self.data['Adj Close'] / self.data['MA_200'] - 1
+        self.data['Price_vs_MA20'] = self.data[self.price_column] / self.data['MA_20'] - 1
+        self.data['Price_vs_MA50'] = self.data[self.price_column] / self.data['MA_50'] - 1
+        self.data['Price_vs_MA200'] = self.data[self.price_column] / self.data['MA_200'] - 1
         
         # Calculate momentum indicators
         self.data['MA20_vs_MA50'] = self.data['MA_20'] / self.data['MA_50'] - 1
@@ -237,7 +288,8 @@ class StockMLPredictor:
         
         # Get test data dates (last portion of our dataset)
         test_dates = self.data.index[-len(X_test):]
-        test_prices = self.data['Adj Close'].iloc[-len(X_test):].values
+        # FIXED: Use the determined price column
+        test_prices = self.data[self.price_column].iloc[-len(X_test):].values
         
         # Create comprehensive visualization
         fig, axes = plt.subplots(3, 1, figsize=(15, 12))
@@ -288,6 +340,7 @@ class StockMLPredictor:
         
         print(f"Model Type: Random Forest Classifier")
         print(f"Prediction Task: Tomorrow's price direction (up/down)")
+        print(f"Price Column Used: {self.price_column}")  # ADDED: Show which column was used
         print(f"Overall Accuracy: {accuracy:.1%}")
         
         # Interpret accuracy
@@ -324,45 +377,62 @@ def main():
     Main function to run machine learning analysis
     """
     
-    print("Apple Stock Machine Learning Predictor")
-    print("="*45)
+    print("Apple Stock Machine Learning Predictor - FIXED VERSION")
+    print("="*55)
     
     # Load data with technical indicators
     try:
         data = pd.read_csv('apple_stock_with_indicators.csv', index_col=0, parse_dates=True)
         print(f"Loaded {len(data)} days of Apple stock data with indicators")
+        print(f"Available columns: {list(data.columns)}")  # ADDED: Show available columns
     except FileNotFoundError:
         print("Error: apple_stock_with_indicators.csv not found!")
-        print("Please run technical_indicators.py first")
+        print("Please run technical_indicators.py first to create this file")
+        print("The file should contain columns like: Close/Adj Close, Volume, MA_20, MA_50, MA_200, Volume_MA, Signal")
+        return
+    except Exception as e:
+        print(f"Error loading data: {e}")
         return
     
     # Initialize ML predictor
-    predictor = StockMLPredictor(data)
+    try:
+        predictor = StockMLPredictor(data)
+    except ValueError as e:
+        print(f"Data validation error: {e}")
+        return
     
-    # Prepare features for machine learning
-    predictor.prepare_ml_features()
-    
-    # Split and scale data
-    X_train, X_test, y_train, y_test = predictor.split_and_scale_data()
-    
-    # Train model
-    predictor.train_model(X_train, y_train)
-    
-    # Evaluate model
-    y_pred, y_pred_proba, accuracy = predictor.evaluate_model(X_test, y_test)
-    
-    # Analyze feature importance
-    feature_importance = predictor.analyze_feature_importance()
-    
-    # Create visualizations
-    predictor.create_prediction_visualization(X_test, y_test, y_pred, y_pred_proba)
-    
-    # Generate final report
-    predictor.generate_prediction_report(accuracy, feature_importance)
-    
-    print(f"\nAll analysis complete! Check the generated charts and reports.")
-    
-    return predictor
+    try:
+        # Prepare features for machine learning
+        predictor.prepare_ml_features()
+        
+        # Split and scale data
+        X_train, X_test, y_train, y_test = predictor.split_and_scale_data()
+        
+        # Train model
+        predictor.train_model(X_train, y_train)
+        
+        # Evaluate model
+        y_pred, y_pred_proba, accuracy = predictor.evaluate_model(X_test, y_test)
+        
+        # Analyze feature importance
+        feature_importance = predictor.analyze_feature_importance()
+        
+        # Create visualizations
+        predictor.create_prediction_visualization(X_test, y_test, y_pred, y_pred_proba)
+        
+        # Generate final report
+        predictor.generate_prediction_report(accuracy, feature_importance)
+        
+        print(f"\nAll analysis complete! Check the generated charts and reports.")
+        
+        return predictor
+        
+    except Exception as e:
+        print(f"Error during analysis: {e}")
+        print("Please check that your data file contains all required columns")
+        return None
 
 if __name__ == "__main__":
     predictor = main()
+
+    
