@@ -59,7 +59,7 @@ def explore_basic_data(data):
         'Volume': 'Number of shares traded each day'
     }
     
-    # Only show explanations for columns that actually exist in our data
+    # Only show explanations for columns that exist in our data
     for col, explanation in columns_explanation.items():
         if col in data.columns:
             print(f"  {col}: {explanation}")
@@ -79,9 +79,6 @@ def explore_basic_data(data):
 def create_basic_visualizations(data):
     """
     Create fundamental charts to visualize stock patterns
-    
-    Parameters:
-    data (pandas.DataFrame): Stock data to visualize
     """
     
     print("\nCreating visualizations...")
