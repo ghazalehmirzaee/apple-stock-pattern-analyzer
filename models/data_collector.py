@@ -26,7 +26,6 @@ def download_apple_data(years_back=5):
     
     # Method 1: Flatten the columns if they are MultiIndex
     if isinstance(apple_data.columns, pd.MultiIndex):
-        # This removes the ticker symbol and keeps just the data type
         apple_data.columns = apple_data.columns.get_level_values(0)
     
     print(f"Successfully downloaded {len(apple_data)} days of data")
