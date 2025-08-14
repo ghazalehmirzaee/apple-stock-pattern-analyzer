@@ -29,7 +29,7 @@ def download_apple_data(years_back=5):
         apple_data.columns = apple_data.columns.get_level_values(0)
     
     print(f"Successfully downloaded {len(apple_data)} days of data")
-    print(f"Column names: {list(apple_data.columns)}")  # Debug: show actual column names
+    print(f"Column names: {list(apple_data.columns)}") 
     
     return apple_data
 
