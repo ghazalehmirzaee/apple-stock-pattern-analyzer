@@ -12,9 +12,6 @@ from datetime import datetime, timedelta
 def download_apple_data(years_back=5):
     """
     Download Apple stock data from Yahoo Finance
-    
-    Parameters:
-    years_back (int): How many years of historical data to download
     """
     
     # Calculate start date (years_back years ago from today)
