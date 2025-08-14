@@ -24,7 +24,6 @@ def download_apple_data(years_back=5):
     # AAPL is Apple's stock symbol
     apple_data = yf.download('AAPL', start=start_date, end=end_date)
     
-    # SOLUTION: Fix the MultiIndex column issue
     # Method 1: Flatten the columns if they are MultiIndex
     if isinstance(apple_data.columns, pd.MultiIndex):
         # This removes the ticker symbol and keeps just the data type
