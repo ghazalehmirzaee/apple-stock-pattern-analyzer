@@ -96,18 +96,5 @@ This project welcomes contributions! Please follow these steps:
 4. Push to the branch (`git push origin dev`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Yahoo Finance for providing free stock data API
-- Scikit-learn community for excellent machine learning tools
-- Python data science ecosystem for powerful analysis capabilities
-
-## Contact
-
-If you have questions about this project or want to discuss data science applications, feel free to reach out!
 
 
