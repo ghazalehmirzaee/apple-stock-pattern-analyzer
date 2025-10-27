@@ -80,11 +80,7 @@ pip install -r requirements.txt
 - Short-term price momentum influences next-day direction
 - Market prediction remains challenging even with sophisticated models
 
-
 ## Contributing
-
-This project welcomes contributions! Please follow these steps:
-
 1. Fork the repository
 2. Create a feature branch (`git checkout -b dev`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
