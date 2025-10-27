@@ -16,7 +16,7 @@ This project demonstrates real-world application of machine learning to financia
 
 ## Technologies Used
 
-- **Python 3.8+**: Core programming language
+- **Python 3.8+**: programming language
 - **yfinance**: Real-time stock data collection
 - **pandas**: Data manipulation and analysis
 - **matplotlib/seaborn**: Data visualization
@@ -34,7 +34,6 @@ This project demonstrates real-world application of machine learning to financia
 ### Machine Learning
 - Random Forest classification model
 - Feature engineering from technical indicators
-- Model performance evaluation
 - Feature importance analysis
 
 ### Visualizations
