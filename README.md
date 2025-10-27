@@ -1,6 +1,6 @@
 # Apple Stock Pattern Analyzer
 
-A comprehensive machine learning project that analyzes Apple stock patterns and predicts price movements using technical indicators and advanced data science techniques.
+A machine learning project that analyzes Apple stock patterns and predicts price movements using technical indicators.
 
 ## Project Overview
 
