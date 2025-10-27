@@ -74,10 +74,6 @@ pip install -r requirements.txt
 - `data/apple_stock_with_indicators.csv`: Data with technical indicators
 - `results/`: All generated charts and visualizations
 
-## Model Performance
-
-Our Random Forest model achieves approximately 55-65% accuracy in predicting next-day price direction, demonstrating that some predictable patterns exist in stock price movements while highlighting the inherent difficulty of market prediction.
-
 ### Key Insights
 - Moving averages are among the most important predictive features
 - Volume patterns provide significant predictive value
